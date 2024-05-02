@@ -51,7 +51,7 @@ namespace AssGen
 				string assetBasePath = Path.Combine(basePath, assetRoot);
 				StringBuilder sb = new StringBuilder();
 				GenerateClass(sb, assetBasePath);
-				spc.AddSource("Assets.cs", "using ReLogic.Content;\nglobal using AssGen;\nnamespace AssGen\n{" + sb.ToString() + "}");
+				spc.AddSource("Assets.cs", "global using AssGen;\nusing Microsoft.Xna.Framework.Graphics\nusing ReLogic.Content;\nnamespace AssGen\n{" + sb.ToString() + "}");
 			});
 		}
 
