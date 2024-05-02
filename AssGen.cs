@@ -13,16 +13,45 @@ namespace AssGen
 
 		public void Initialize(IncrementalGeneratorInitializationContext context)
 		{
-			IncrementalValuesProvider<AdditionalText> images = context.AdditionalTextsProvider.Where(file => file.Path.EndsWith(".png"));
+			IncrementalValuesProvider<AdditionalText> images = context.AdditionalTextsProvider.Where(file => file.Path.EndsWith(".png") || file.Path.EndsWith("AssGenConfig.txt"));
 
 			context.RegisterSourceOutput(images.Collect(), (spc, path) =>
 			{
-				Console.WriteLine(path.ToString());
-				basePath = path.First().Path.ToString().Split(new string[] { "StarlightRiver\\Assets" }, StringSplitOptions.None)[0];
-				string assetBasePath = Path.Combine(basePath, "StarlightRiver\\Assets");
+				var configPath = path.FirstOrDefault(n => n.Path.EndsWith("AssGenConfig.txt"))?.Path ?? null;
+
+				if (configPath is null)
+					throw new Exception("No configuration file provided! Please place a file named AssGenConfig.txt somewhere in your mod folder.");
+
+				string assetRoot = null;
+
+				using (FileStream configStream = File.OpenRead(configPath))
+				{
+					StreamReader reader = new StreamReader(configStream);
+
+					while (true)
+					{
+						var line = reader.ReadLine();
+
+						if (line is null)
+							break;
+
+						if (line.StartsWith("AssetRoot:"))
+							assetRoot = line.Replace("AssetRoot:", "");
+					}				
+				}
+
+				if (assetRoot is null)
+					throw new Exception("No asset root provided! Please add the asset root to AssGenConfig.txt, in the form: AssetRoot:YourModName/YourAssetFolder");
+
+				basePath = path.First(n => n.Path.EndsWith(".png"))?.Path.ToString().Split(new string[] { assetRoot }, StringSplitOptions.None)[0] ?? null;
+
+				if (basePath is null)
+					throw new Exception("No assets were found in your asset root! Make sure atleast one .png file exists somewhere in your assets folder.");
+
+				string assetBasePath = Path.Combine(basePath, assetRoot);
 				StringBuilder sb = new StringBuilder();
 				GenerateClass(sb, assetBasePath);
-				spc.AddSource("Assets.cs", "namespace StarlightRiver.Core\n{" + sb.ToString() + "}");
+				spc.AddSource("Assets.cs", "global using AssGen;\nnamespace AssGen\n{" + sb.ToString() + "}");
 			});
 		}
 
