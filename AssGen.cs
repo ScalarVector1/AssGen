@@ -57,11 +57,13 @@ namespace AssGen
 
 		public static void GenerateClass(StringBuilder sb, string dir)
 		{
-			string className = Path.GetFileName(dir).Replace(" ", "_").Replace(".", "_");
+			string className = Path.GetFileName(dir);
 
 			// Dont crawl hidden directories
 			if (className.StartsWith("."))
 				return;
+
+			className = className.Replace(" ", "_").Replace(".", "_");
 
 			// Prepend an underscore if it starts with a number
 			if (char.IsDigit(className[0]))
