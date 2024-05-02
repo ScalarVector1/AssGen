@@ -51,13 +51,22 @@ namespace AssGen
 				string assetBasePath = Path.Combine(basePath, assetRoot);
 				StringBuilder sb = new StringBuilder();
 				GenerateClass(sb, assetBasePath);
-				spc.AddSource("Assets.cs", "global using AssGen;\nnamespace AssGen\n{" + sb.ToString() + "}");
+				spc.AddSource("Assets.cs", "using ReLogic.Content;\nglobal using AssGen;\nnamespace AssGen\n{" + sb.ToString() + "}");
 			});
 		}
 
 		public static void GenerateClass(StringBuilder sb, string dir)
 		{
-			string className = Path.GetFileName(dir);
+			string className = Path.GetFileName(dir).Replace(" ", "_").Replace(".", "_");
+
+			// Dont crawl hidden directories
+			if (className.StartsWith("."))
+				return;
+
+			// Prepend an underscore if it starts with a number
+			if (char.IsDigit(className[0]))
+				className = "_" + className;
+
 			sb.AppendLine($"public class {className} {{");
 
 			foreach (string file in Directory.EnumerateFiles(dir))
@@ -65,6 +74,9 @@ namespace AssGen
 				if (file.EndsWith(".png"))
 				{
 					string name = Path.GetFileNameWithoutExtension(file).Replace(" ", "_").Replace(".", "_");
+
+					if (char.IsDigit(name[0]))
+						name = "_" + name;
 
 					if (name == className)
 					{
