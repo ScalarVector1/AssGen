@@ -18,6 +18,8 @@
 		<PackageId>AssGen</PackageId>
 		<PackageVersion>1.0.0.0</PackageVersion>
 		<Authors>ScalarVector1</Authors>
+		<PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<RepositoryUrl>https://github.com/ScalarVector1/AssGen</RepositoryUrl>
 		<PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
 		<Description>Automatic asset handle generator for Terraria mods</Description>
