@@ -14,7 +14,13 @@
         PackagePath="analyzers/dotnet/cs" Visible="false" />
   </ItemGroup>
 
+	<ItemGroup>
+		<None Include="LICENSE.txt" Pack="true" PackagePath="" />
+		<None Include="README.md" Pack="true" PackagePath="" />
+	</ItemGroup>
+
 	<PropertyGroup>
+		<IncludeContentInPack>true</IncludeContentInPack>
 		<PackageId>AssGen</PackageId>
 		<PackageVersion>1.0.0.0</PackageVersion>
 		<Authors>ScalarVector1</Authors>
