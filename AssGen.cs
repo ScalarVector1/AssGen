@@ -39,7 +39,7 @@ namespace AssGen
 					throw new Exception("No asset root provided! Please add the asset root to AssGenConfig.txt, in the form: AssetRoot:YourModName/YourAssetFolder");
 
 				// We get the first path in the provider, and split it along the asset root to get the base path on the file system.
-				basePath = path.First(n => n.Path.EndsWith(".png"))?.Path.ToString().Split(new string[] { assetRoot }, StringSplitOptions.None)[0] ?? null;
+				basePath = path.First(n => n.Path.EndsWith(".png") && n.Path.Contains(assetRoot))?.Path.ToString().Split(new string[] { assetRoot }, StringSplitOptions.None)[0] ?? null;
 
 				// We throw if there are no images in the project that start with the asset root
 				if (basePath is null)
@@ -54,11 +54,19 @@ namespace AssGen
 					if (img.Path == configPath) // ignore the config
 						continue;
 
+					if (!img.Path.ToString().StartsWith(basePath + assetRoot)) // ignore files not in asset root
+						continue;
+
 					// We split the path as everything after the root, and by the subdirectory seperator. TODO: Something to make sure this wont die with different path seperators?
 					var split = img.Path.ToString().Split(new string[] { assetRoot }, StringSplitOptions.None)[1].Split('\\').ToList();
+
+					if (split.Count == 0) // ignore error case
+						continue;
+
 					var fileName = split[split.Count - 1].Replace(".png", ""); // Save the file name for later
 					split.RemoveAt(split.Count - 1); // Remove the last element as that is the file name
 
+					var lastOuter = "";
 					if (split.Count > 1) // if we're in a subdirectory
 					{
 						foreach (var sub in split) // generate a partial nested class for each directory. The compiler figures out that these are all the same thing later. Godspeed, C# compiler
@@ -66,7 +74,12 @@ namespace AssGen
 							if (!string.IsNullOrEmpty(sub))
 							{
 								var clean = CleanName(sub);
+
+								if (clean == lastOuter)
+									clean = clean + "_";
+
 								sb.Append($"public partial class {clean}{{");
+								lastOuter = clean;
 							}
 						}
 					}
@@ -75,7 +88,7 @@ namespace AssGen
 					string name = CleanName(fileName);
 
 					// if equal to the containing class, add an underscore to force it to be unique
-					if (split.Count() > 1 && name == split[split.Count() - 2])
+					if (name == lastOuter)
 					{
 						name += "_";
 					}
@@ -100,7 +113,7 @@ namespace AssGen
 				}
 
 				// Add global usings, then the inner source
-				spc.AddSource("Assets.cs", "global using AssGen;\nusing Microsoft.Xna.Framework.Graphics;\nusing ReLogic.Content;\nusing Terraria.ModLoader;\nnamespace AssGen\n{\npublic class Assets{" + sb.ToString() + "}}");
+				spc.AddSource("Assets.cs", "global using AssGen;\nusing Microsoft.Xna.Framework.Graphics;\nusing ReLogic.Content;\nusing Terraria.ModLoader;\nnamespace AssGen\n{\npublic class Assets{" + sb.ToString() + "}}\n" + $"// Root: {basePath + assetRoot}");
 			});
 		}
 
@@ -111,6 +124,9 @@ namespace AssGen
 		/// <returns></returns>
 		public static string CleanName(string input)
 		{
+			if (string.IsNullOrEmpty(input))
+				return input;
+
 			input = input.Replace(" ", "_").Replace(".", "_").Replace("-", "_");
 
 			// Prepend an underscore if it starts with a number
