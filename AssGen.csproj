@@ -22,7 +22,7 @@
 	<PropertyGroup>
 		<IncludeContentInPack>true</IncludeContentInPack>
 		<PackageId>AssGen</PackageId>
-		<PackageVersion>2.0.0</PackageVersion>
+		<PackageVersion>3.0.0</PackageVersion>
 		<Authors>ScalarVector1</Authors>
 		<PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
 		<PackageReadmeFile>README.md</PackageReadmeFile>

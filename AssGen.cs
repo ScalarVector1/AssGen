@@ -97,7 +97,12 @@ namespace AssGen
 					string codePath = img.Path.Replace(basePath, "").Replace(".png", "").Replace("\\", "/");
 
 					// append the member
-					sb.Append($"public static Asset<Texture2D> {name} = ModContent.Request<Texture2D>(\"{codePath}\");");
+					sb.Append(
+						$@"
+						private static Lazy<Asset<Texture2D>> _{name} = new(() => ModContent.Request<Texture2D>(""{codePath}""));
+						public static Asset<Texture2D> {name} => _{name}.Value;
+						"
+						);
 
 					// add appropriate amount of closing braces
 					if (split.Count > 1)
@@ -113,7 +118,16 @@ namespace AssGen
 				}
 
 				// Add global usings, then the inner source
-				spc.AddSource("Assets.cs", "global using AssGen;\nusing Microsoft.Xna.Framework.Graphics;\nusing ReLogic.Content;\nusing Terraria.ModLoader;\nnamespace AssGen\n{\npublic class Assets{" + sb.ToString() + "}}\n" + $"// Root: {basePath + assetRoot}");
+				spc.AddSource("Assets.cs", 
+					"global using AssGen;\n" +
+					"using System;\n" +
+					"using Microsoft.Xna.Framework.Graphics;\n" +
+					"using ReLogic.Content;\n" +
+					"using Terraria.ModLoader;\n" +
+					"namespace AssGen\n" +
+					"{\n" +
+					"public class Assets{" + sb.ToString() + "}}\n" +
+					"" + $"// Root: {basePath + assetRoot}");
 			});
 		}
 
