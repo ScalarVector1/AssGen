@@ -9,6 +9,7 @@ namespace AssGen
 	[Generator]
 	public class AssGen : IIncrementalGenerator
 	{
+		private static readonly char[] directorySeparators = new[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar };
 		public static string basePath;
 
 		public void Initialize(IncrementalGeneratorInitializationContext context)
@@ -57,8 +58,8 @@ namespace AssGen
 					if (!img.Path.ToString().StartsWith(basePath + assetRoot)) // ignore files not in asset root
 						continue;
 
-					// We split the path as everything after the root, and by the subdirectory seperator. TODO: Something to make sure this wont die with different path seperators?
-					var split = img.Path.ToString().Split(new string[] { assetRoot }, StringSplitOptions.None)[1].Split('\\').ToList();
+					// We split the path as everything after the root, and by the subdirectory seperators
+					var split = img.Path.ToString().Split(new string[] { assetRoot }, StringSplitOptions.None)[1].Split(directorySeparators).ToList();
 
 					if (split.Count == 0) // ignore error case
 						continue;
